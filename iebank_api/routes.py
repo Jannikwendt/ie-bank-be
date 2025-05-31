@@ -26,10 +26,17 @@ def skull():
 def create_account():
     name = request.json['name']
     currency = request.json['currency']
-    account = Account(name, currency)
+    country  = request.json['country']
+    # very simple validation: exactly 2 letters
+    if not country or len(country) != 2 or not country.isalpha():
+        return {'error': 'country must be 2-letter ISO code'}, 400
+
+    account  = Account(name, currency, country)
+
     db.session.add(account)
     db.session.commit()
-    return format_account(account)
+    return format_account(account), 201
+    
 
 @app.route('/accounts', methods=['GET'])
 def get_accounts():
@@ -62,6 +69,7 @@ def format_account(account):
         'account_number': account.account_number,
         'balance': account.balance,
         'currency': account.currency,
+        'country': account.country,
         'status': account.status,
         'created_at': account.created_at
     }
